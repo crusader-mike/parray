@@ -37,6 +37,8 @@ You might think that they'll use string length when figuring out if s1 != s2... 
 
 One more thing -- _COW_ price goes up with number of CPUs in your system. Because every time you copy it, it has to use atomic operations which get more expensive with number of CPUs. That is assuming you compiled your code with MT enabled (which is typical). And price of _SSO_ is extra branch in every piece of logic that accesses underlying data.
 
+(Another side effect of COW is that any modification can throw -- even if you are updating only one element.)
+
 Overall, std::basic_string is a good example of how good intentions could lead to mediocre results. While you might be able to dig trenches and cut down trees with a swiss knife -- shovel and axe will do the job much better. :-)
 
 # So, why parray?
