@@ -3,7 +3,7 @@
 This is a lightweight class representing raw pointer to an array of elements of type T. It is essentially a (length, T*) pair.
 Trait (Tr) contains array comparison logic. Originally this class was designed to be used with _char_ and meant to solve problems C++ has with string handling, but I've generalized it for any T.
 
-Note that since this code is freshly rewritten -- it may potentially have some problems. Please, let me know if you find something.
+Note that this code is freshly rewritten -- it may potentially have some problems. Please, let me know if you find something.
 
 # What is wrong with string handling in C++?
 
@@ -19,7 +19,9 @@ Now, how often do you really need to use lexicographical comparison? In my exper
 
 Another problem with C-style strings is the fact that all provided tools demand terminating nul. You can't read text file into memory, find a substring that interest you and process it in some way -- you have to copy it into another location, append nul and make sure you don't forget about freeing it later. Besides obvious performance loss it is inconvenient -- now you have to deal with lifetimes of additional objects.
 
-And finally, array-to-pointer decay is a constant PITA, especially if you write generic code. The fact that arrays are second-class citizens in C++ often gets in a way, makes type system unnecessarily complicated.
+Also, array-to-pointer decay is a constant PITA, especially if you write generic code. The fact that arrays are second-class citizens in C++ often gets in a way, makes type system unnecessarily complicated.
+
+And finally, NULL pointer is not a NTBS -- often people forget that, which leads to mysterious crashes.
 
 ## std::basic_string\<T, Tr, A\>
 
@@ -48,11 +50,70 @@ Compared to C-style string you end up passing twice more data around (pointer an
 # parray_tools.h
 
 Defines few function families designed to be used with parray. Namely:
-- trim() -- to get rid of whitespaces
-- contains() -- to figure out if given array is a subarray of another
-- split() -- to split array into subarrays according to delimiter
-- join() -- to combine arrays into one using various delimiters
+- trim() -- get rid of whitespaces
+- contains() -- figure out if given array is a subarray of another
+- split() -- split array into subarrays
+- join() -- combine arrays into one
 
 all functions are self-explanatory and well-documented in the code.
 
 # Examples of usage
+
+### Printing rcstring (aka parray\<char const\>)
+
+```C++
+rcsting s = ntba("Hello world!");   // ntba() makes sure implicit \0 is ignored
+printf("%.*s", (int)s.len, s.p);    // unfortunately GCC insists on (int) cast  :-\
+
+cout << s;
+```
+
+### Split string and process every part without mem alloc
+
+```C++
+rcstring data = ntba("A_B_C_...._X_Y_Z");
+for(;;)
+{
+    rcstring parts[3];
+    size_t count = split(data, '_', parts);
+    for(size_t i = 0, t = (count != 3 ? count : 2); i < t; ++i)
+        cout << parts[i] << "\n";   // process parts[i]
+
+    if (count != 3) break;    // no remainder --> we processed everything
+
+    data = parts[2];          // process the rest
+}
+```
+
+### Remove portion of a string (only one alloc)
+
+```C++
+rcstring data = ...;          //  something like "AAA_..._BBB_CCCC"
+
+rcstring parts[3];
+size_t count = rsplit(data, '_', parts);
+    // parts[0] == "CCCC"
+    // parts[1] == "BBB"
+    // parts[2] == "AAA_..."
+if (count == 3 && parts[0] == ntba("CCCC") && parts[1] == ntba("BBB"))
+{
+    parts[1].len = 0;                                      // make parts[1] empty
+    return rjoin_se<string>(parts, parts + count, '_');    // AAA_..._CCCC
+}
+else
+    ...;  // unexpected data
+```
+
+### Modify array
+
+```C++
+// parray is a plain pointer to type T, you can modify data it points to
+
+string foo()
+{
+    char data[] = "abc";
+    rstring s = ntba(data);
+    s[2] = 'a';
+    return s.str();
+}
+```
