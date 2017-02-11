@@ -49,7 +49,7 @@
 //      assert( r3 == n );                  // int is not char type -- no problems with nul-termination
 //      assert( r3 < r1 );                  // r3.len == r1.len && 1 < '1'
 //
-//      rcstring r4 = rcstring::zero();     // default parray ctor leaves data undefined
+//      rcstring r4{};                      // force zero initialization
 //      assert( r4 < r1 );
 //
 //      std::string s("123");
@@ -353,12 +353,10 @@ struct parray
     size_t  len;
     T*      p;              // not used if len == 0
 
-    parray() = default;     // default ctor intentionally leaves state undefined 
+    parray() = default;     // use default uinitialization by default (use parray<...> v{} to force zero initialization)
 
     // implicit dtor, cctor & op= are ok
     // implicit mctor & opm= are ok
-
-    static parray zero() { return {0, static_cast<T*>(nullptr)}; }                      // change to static constexpr variable in C++17?
 
     template<class E, enable_if<is_almost_same<E, T>>...>                               // (E*, size_t) -> parray<T> (E* -> T*)
     parray(size_t len, E* p) : len(len), p(p) {}
@@ -396,70 +394,70 @@ struct parray
     // comparison operators (forwarding everything to trait in case if user wants to force unusual behaviour)
 
     // parray<T, Traits> vs parray<E, Traits>
-    template<class E> friend inline bool operator==(parray l, parray<E, Traits> r) { return Traits::eq    (l.len, l.p, r.len, r.p); }
-    template<class E> friend inline bool operator!=(parray l, parray<E, Traits> r) { return Traits::eq_not(l.len, l.p, r.len, r.p); }
-    template<class E> friend inline bool operator< (parray l, parray<E, Traits> r) { return Traits::lt    (l.len, l.p, r.len, r.p); }
-    template<class E> friend inline bool operator> (parray l, parray<E, Traits> r) { return Traits::gt    (l.len, l.p, r.len, r.p); }
-    template<class E> friend inline bool operator<=(parray l, parray<E, Traits> r) { return Traits::lt_eq (l.len, l.p, r.len, r.p); }
-    template<class E> friend inline bool operator>=(parray l, parray<E, Traits> r) { return Traits::gt_eq (l.len, l.p, r.len, r.p); }
+    template<class E> friend bool operator==(parray l, parray<E, Traits> r) { return Traits::eq    (l.len, l.p, r.len, r.p); }
+    template<class E> friend bool operator!=(parray l, parray<E, Traits> r) { return Traits::eq_not(l.len, l.p, r.len, r.p); }
+    template<class E> friend bool operator< (parray l, parray<E, Traits> r) { return Traits::lt    (l.len, l.p, r.len, r.p); }
+    template<class E> friend bool operator> (parray l, parray<E, Traits> r) { return Traits::gt    (l.len, l.p, r.len, r.p); }
+    template<class E> friend bool operator<=(parray l, parray<E, Traits> r) { return Traits::lt_eq (l.len, l.p, r.len, r.p); }
+    template<class E> friend bool operator>=(parray l, parray<E, Traits> r) { return Traits::gt_eq (l.len, l.p, r.len, r.p); }
 
     // parray<T, Traits> vs basic_string<E, Tr, A>
-    template<class E, class Tr, class A> friend inline bool operator==(parray l, basic_string<E, Tr, A> const& r) { return l == parray<E const, Traits>(r); }
-    template<class E, class Tr, class A> friend inline bool operator!=(parray l, basic_string<E, Tr, A> const& r) { return l != parray<E const, Traits>(r); }
-    template<class E, class Tr, class A> friend inline bool operator< (parray l, basic_string<E, Tr, A> const& r) { return l <  parray<E const, Traits>(r); }
-    template<class E, class Tr, class A> friend inline bool operator> (parray l, basic_string<E, Tr, A> const& r) { return l >  parray<E const, Traits>(r); }
-    template<class E, class Tr, class A> friend inline bool operator<=(parray l, basic_string<E, Tr, A> const& r) { return l <= parray<E const, Traits>(r); }
-    template<class E, class Tr, class A> friend inline bool operator>=(parray l, basic_string<E, Tr, A> const& r) { return l >= parray<E const, Traits>(r); }
-    template<class E, class Tr, class A> friend inline bool operator==(basic_string<E, Tr, A> const& l, parray r) { return parray<E const, Traits>(l) == r; }
-    template<class E, class Tr, class A> friend inline bool operator!=(basic_string<E, Tr, A> const& l, parray r) { return parray<E const, Traits>(l) != r; }
-    template<class E, class Tr, class A> friend inline bool operator< (basic_string<E, Tr, A> const& l, parray r) { return parray<E const, Traits>(l) <  r; }
-    template<class E, class Tr, class A> friend inline bool operator> (basic_string<E, Tr, A> const& l, parray r) { return parray<E const, Traits>(l) >  r; }
-    template<class E, class Tr, class A> friend inline bool operator<=(basic_string<E, Tr, A> const& l, parray r) { return parray<E const, Traits>(l) <= r; }
-    template<class E, class Tr, class A> friend inline bool operator>=(basic_string<E, Tr, A> const& l, parray r) { return parray<E const, Traits>(l) >= r; }
+    template<class E, class Tr, class A> friend bool operator==(parray l, basic_string<E, Tr, A> const& r) { return l == parray<E const, Traits>(r); }
+    template<class E, class Tr, class A> friend bool operator!=(parray l, basic_string<E, Tr, A> const& r) { return l != parray<E const, Traits>(r); }
+    template<class E, class Tr, class A> friend bool operator< (parray l, basic_string<E, Tr, A> const& r) { return l <  parray<E const, Traits>(r); }
+    template<class E, class Tr, class A> friend bool operator> (parray l, basic_string<E, Tr, A> const& r) { return l >  parray<E const, Traits>(r); }
+    template<class E, class Tr, class A> friend bool operator<=(parray l, basic_string<E, Tr, A> const& r) { return l <= parray<E const, Traits>(r); }
+    template<class E, class Tr, class A> friend bool operator>=(parray l, basic_string<E, Tr, A> const& r) { return l >= parray<E const, Traits>(r); }
+    template<class E, class Tr, class A> friend bool operator==(basic_string<E, Tr, A> const& l, parray r) { return parray<E const, Traits>(l) == r; }
+    template<class E, class Tr, class A> friend bool operator!=(basic_string<E, Tr, A> const& l, parray r) { return parray<E const, Traits>(l) != r; }
+    template<class E, class Tr, class A> friend bool operator< (basic_string<E, Tr, A> const& l, parray r) { return parray<E const, Traits>(l) <  r; }
+    template<class E, class Tr, class A> friend bool operator> (basic_string<E, Tr, A> const& l, parray r) { return parray<E const, Traits>(l) >  r; }
+    template<class E, class Tr, class A> friend bool operator<=(basic_string<E, Tr, A> const& l, parray r) { return parray<E const, Traits>(l) <= r; }
+    template<class E, class Tr, class A> friend bool operator>=(basic_string<E, Tr, A> const& l, parray r) { return parray<E const, Traits>(l) >= r; }
 
     // parray<T, Traits> vs vector<E, A>
-    template<class E, class A> friend inline bool operator==(parray l, vector<E, A> const& r) { return l == parray<E const, Traits>(r); }
-    template<class E, class A> friend inline bool operator!=(parray l, vector<E, A> const& r) { return l != parray<E const, Traits>(r); }
-    template<class E, class A> friend inline bool operator< (parray l, vector<E, A> const& r) { return l <  parray<E const, Traits>(r); }
-    template<class E, class A> friend inline bool operator> (parray l, vector<E, A> const& r) { return l >  parray<E const, Traits>(r); }
-    template<class E, class A> friend inline bool operator<=(parray l, vector<E, A> const& r) { return l <= parray<E const, Traits>(r); }
-    template<class E, class A> friend inline bool operator>=(parray l, vector<E, A> const& r) { return l >= parray<E const, Traits>(r); }
-    template<class E, class A> friend inline bool operator==(vector<E, A> const& l, parray r) { return parray<E const, Traits>(l) == r; }
-    template<class E, class A> friend inline bool operator!=(vector<E, A> const& l, parray r) { return parray<E const, Traits>(l) != r; }
-    template<class E, class A> friend inline bool operator< (vector<E, A> const& l, parray r) { return parray<E const, Traits>(l) <  r; }
-    template<class E, class A> friend inline bool operator> (vector<E, A> const& l, parray r) { return parray<E const, Traits>(l) >  r; }
-    template<class E, class A> friend inline bool operator<=(vector<E, A> const& l, parray r) { return parray<E const, Traits>(l) <= r; }
-    template<class E, class A> friend inline bool operator>=(vector<E, A> const& l, parray r) { return parray<E const, Traits>(l) >= r; }
+    template<class E, class A> friend bool operator==(parray l, vector<E, A> const& r) { return l == parray<E const, Traits>(r); }
+    template<class E, class A> friend bool operator!=(parray l, vector<E, A> const& r) { return l != parray<E const, Traits>(r); }
+    template<class E, class A> friend bool operator< (parray l, vector<E, A> const& r) { return l <  parray<E const, Traits>(r); }
+    template<class E, class A> friend bool operator> (parray l, vector<E, A> const& r) { return l >  parray<E const, Traits>(r); }
+    template<class E, class A> friend bool operator<=(parray l, vector<E, A> const& r) { return l <= parray<E const, Traits>(r); }
+    template<class E, class A> friend bool operator>=(parray l, vector<E, A> const& r) { return l >= parray<E const, Traits>(r); }
+    template<class E, class A> friend bool operator==(vector<E, A> const& l, parray r) { return parray<E const, Traits>(l) == r; }
+    template<class E, class A> friend bool operator!=(vector<E, A> const& l, parray r) { return parray<E const, Traits>(l) != r; }
+    template<class E, class A> friend bool operator< (vector<E, A> const& l, parray r) { return parray<E const, Traits>(l) <  r; }
+    template<class E, class A> friend bool operator> (vector<E, A> const& l, parray r) { return parray<E const, Traits>(l) >  r; }
+    template<class E, class A> friend bool operator<=(vector<E, A> const& l, parray r) { return parray<E const, Traits>(l) <= r; }
+    template<class E, class A> friend bool operator>=(vector<E, A> const& l, parray r) { return parray<E const, Traits>(l) >= r; }
 
-    template<class E, class A> friend inline bool operator==(parray l, vector<E, A>& r) { return l == parray<E, Traits>(r); }
-    template<class E, class A> friend inline bool operator!=(parray l, vector<E, A>& r) { return l != parray<E, Traits>(r); }
-    template<class E, class A> friend inline bool operator< (parray l, vector<E, A>& r) { return l <  parray<E, Traits>(r); }
-    template<class E, class A> friend inline bool operator> (parray l, vector<E, A>& r) { return l >  parray<E, Traits>(r); }
-    template<class E, class A> friend inline bool operator<=(parray l, vector<E, A>& r) { return l <= parray<E, Traits>(r); }
-    template<class E, class A> friend inline bool operator>=(parray l, vector<E, A>& r) { return l >= parray<E, Traits>(r); }
-    template<class E, class A> friend inline bool operator==(vector<E, A>& l, parray r) { return parray<E, Traits>(l) == r; }
-    template<class E, class A> friend inline bool operator!=(vector<E, A>& l, parray r) { return parray<E, Traits>(l) != r; }
-    template<class E, class A> friend inline bool operator< (vector<E, A>& l, parray r) { return parray<E, Traits>(l) <  r; }
-    template<class E, class A> friend inline bool operator> (vector<E, A>& l, parray r) { return parray<E, Traits>(l) >  r; }
-    template<class E, class A> friend inline bool operator<=(vector<E, A>& l, parray r) { return parray<E, Traits>(l) <= r; }
-    template<class E, class A> friend inline bool operator>=(vector<E, A>& l, parray r) { return parray<E, Traits>(l) >= r; }
+    template<class E, class A> friend bool operator==(parray l, vector<E, A>& r) { return l == parray<E, Traits>(r); }
+    template<class E, class A> friend bool operator!=(parray l, vector<E, A>& r) { return l != parray<E, Traits>(r); }
+    template<class E, class A> friend bool operator< (parray l, vector<E, A>& r) { return l <  parray<E, Traits>(r); }
+    template<class E, class A> friend bool operator> (parray l, vector<E, A>& r) { return l >  parray<E, Traits>(r); }
+    template<class E, class A> friend bool operator<=(parray l, vector<E, A>& r) { return l <= parray<E, Traits>(r); }
+    template<class E, class A> friend bool operator>=(parray l, vector<E, A>& r) { return l >= parray<E, Traits>(r); }
+    template<class E, class A> friend bool operator==(vector<E, A>& l, parray r) { return parray<E, Traits>(l) == r; }
+    template<class E, class A> friend bool operator!=(vector<E, A>& l, parray r) { return parray<E, Traits>(l) != r; }
+    template<class E, class A> friend bool operator< (vector<E, A>& l, parray r) { return parray<E, Traits>(l) <  r; }
+    template<class E, class A> friend bool operator> (vector<E, A>& l, parray r) { return parray<E, Traits>(l) >  r; }
+    template<class E, class A> friend bool operator<=(vector<E, A>& l, parray r) { return parray<E, Traits>(l) <= r; }
+    template<class E, class A> friend bool operator>=(vector<E, A>& l, parray r) { return parray<E, Traits>(l) >= r; }
 
     // parray<T, Traits> vs E[len]
-    template<class E, size_t len, enable_if<!is_char<E>>...> friend inline bool operator==(parray l, E (&r)[len]) { return l == parray<E, Traits>(r); }
-    template<class E, size_t len, enable_if<!is_char<E>>...> friend inline bool operator!=(parray l, E (&r)[len]) { return l != parray<E, Traits>(r); }
-    template<class E, size_t len, enable_if<!is_char<E>>...> friend inline bool operator< (parray l, E (&r)[len]) { return l <  parray<E, Traits>(r); }
-    template<class E, size_t len, enable_if<!is_char<E>>...> friend inline bool operator> (parray l, E (&r)[len]) { return l >  parray<E, Traits>(r); }
-    template<class E, size_t len, enable_if<!is_char<E>>...> friend inline bool operator<=(parray l, E (&r)[len]) { return l <= parray<E, Traits>(r); }
-    template<class E, size_t len, enable_if<!is_char<E>>...> friend inline bool operator>=(parray l, E (&r)[len]) { return l >= parray<E, Traits>(r); }
-    template<class E, size_t len, enable_if<!is_char<E>>...> friend inline bool operator==(E (&l)[len], parray r) { return parray<E, Traits>(l) == r; }
-    template<class E, size_t len, enable_if<!is_char<E>>...> friend inline bool operator!=(E (&l)[len], parray r) { return parray<E, Traits>(l) != r; }
-    template<class E, size_t len, enable_if<!is_char<E>>...> friend inline bool operator< (E (&l)[len], parray r) { return parray<E, Traits>(l) <  r; }
-    template<class E, size_t len, enable_if<!is_char<E>>...> friend inline bool operator> (E (&l)[len], parray r) { return parray<E, Traits>(l) >  r; }
-    template<class E, size_t len, enable_if<!is_char<E>>...> friend inline bool operator<=(E (&l)[len], parray r) { return parray<E, Traits>(l) <= r; }
-    template<class E, size_t len, enable_if<!is_char<E>>...> friend inline bool operator>=(E (&l)[len], parray r) { return parray<E, Traits>(l) >= r; }
+    template<class E, size_t len, enable_if<!is_char<E>>...> friend bool operator==(parray l, E (&r)[len]) { return l == parray<E, Traits>(r); }
+    template<class E, size_t len, enable_if<!is_char<E>>...> friend bool operator!=(parray l, E (&r)[len]) { return l != parray<E, Traits>(r); }
+    template<class E, size_t len, enable_if<!is_char<E>>...> friend bool operator< (parray l, E (&r)[len]) { return l <  parray<E, Traits>(r); }
+    template<class E, size_t len, enable_if<!is_char<E>>...> friend bool operator> (parray l, E (&r)[len]) { return l >  parray<E, Traits>(r); }
+    template<class E, size_t len, enable_if<!is_char<E>>...> friend bool operator<=(parray l, E (&r)[len]) { return l <= parray<E, Traits>(r); }
+    template<class E, size_t len, enable_if<!is_char<E>>...> friend bool operator>=(parray l, E (&r)[len]) { return l >= parray<E, Traits>(r); }
+    template<class E, size_t len, enable_if<!is_char<E>>...> friend bool operator==(E (&l)[len], parray r) { return parray<E, Traits>(l) == r; }
+    template<class E, size_t len, enable_if<!is_char<E>>...> friend bool operator!=(E (&l)[len], parray r) { return parray<E, Traits>(l) != r; }
+    template<class E, size_t len, enable_if<!is_char<E>>...> friend bool operator< (E (&l)[len], parray r) { return parray<E, Traits>(l) <  r; }
+    template<class E, size_t len, enable_if<!is_char<E>>...> friend bool operator> (E (&l)[len], parray r) { return parray<E, Traits>(l) >  r; }
+    template<class E, size_t len, enable_if<!is_char<E>>...> friend bool operator<=(E (&l)[len], parray r) { return parray<E, Traits>(l) <= r; }
+    template<class E, size_t len, enable_if<!is_char<E>>...> friend bool operator>=(E (&l)[len], parray r) { return parray<E, Traits>(l) >= r; }
 
     // ostream <<
-    template<class E, class Tr, enable_if<is_almost_same<T, E const>>...> friend inline basic_ostream<E, Tr>& operator<<(basic_ostream<E, Tr>& os, parray v) { return os.write(v.p, v.len); }
+    template<class E, class Tr, enable_if<is_almost_same<T, E const>>...> friend basic_ostream<E, Tr>& operator<<(basic_ostream<E, Tr>& os, parray v) { return os.write(v.p, v.len); }
 };
 
 
@@ -497,84 +495,84 @@ struct ntbs_t
     // comparisons
 
     // ntbs_t<T, Traits> vs ntbs<E, Traits>
-    template<class E> friend inline bool operator==(ntbs_t l, ntbs_t<E, Traits> r) { return Traits::ntbs_eq    (l.p, r.p); }
-    template<class E> friend inline bool operator!=(ntbs_t l, ntbs_t<E, Traits> r) { return Traits::ntbs_not_eq(l.p, r.p); }
-    template<class E> friend inline bool operator< (ntbs_t l, ntbs_t<E, Traits> r) { return Traits::ntbs_lt    (l.p, r.p); }
-    template<class E> friend inline bool operator> (ntbs_t l, ntbs_t<E, Traits> r) { return Traits::ntbs_gt    (l.p, r.p); }
-    template<class E> friend inline bool operator<=(ntbs_t l, ntbs_t<E, Traits> r) { return Traits::ntbs_lt_eq (l.p, r.p); }
-    template<class E> friend inline bool operator>=(ntbs_t l, ntbs_t<E, Traits> r) { return Traits::ntbs_gt_eq (l.p, r.p); }
+    template<class E> friend bool operator==(ntbs_t l, ntbs_t<E, Traits> r) { return Traits::ntbs_eq    (l.p, r.p); }
+    template<class E> friend bool operator!=(ntbs_t l, ntbs_t<E, Traits> r) { return Traits::ntbs_not_eq(l.p, r.p); }
+    template<class E> friend bool operator< (ntbs_t l, ntbs_t<E, Traits> r) { return Traits::ntbs_lt    (l.p, r.p); }
+    template<class E> friend bool operator> (ntbs_t l, ntbs_t<E, Traits> r) { return Traits::ntbs_gt    (l.p, r.p); }
+    template<class E> friend bool operator<=(ntbs_t l, ntbs_t<E, Traits> r) { return Traits::ntbs_lt_eq (l.p, r.p); }
+    template<class E> friend bool operator>=(ntbs_t l, ntbs_t<E, Traits> r) { return Traits::ntbs_gt_eq (l.p, r.p); }
 
     // ntbs_t<T, Traits> vs parray<E, Traits>
-    template<class E> friend inline bool operator==(ntbs_t l, parray<E, Traits> r) { return Traits::ntbs_eq    (l.p, r.len, r.p); }
-    template<class E> friend inline bool operator!=(ntbs_t l, parray<E, Traits> r) { return Traits::ntbs_not_eq(l.p, r.len, r.p); }
-    template<class E> friend inline bool operator< (ntbs_t l, parray<E, Traits> r) { return Traits::ntbs_lt    (l.p, r.len, r.p); }
-    template<class E> friend inline bool operator> (ntbs_t l, parray<E, Traits> r) { return Traits::ntbs_gt    (l.p, r.len, r.p); }
-    template<class E> friend inline bool operator<=(ntbs_t l, parray<E, Traits> r) { return Traits::ntbs_lt_eq (l.p, r.len, r.p); }
-    template<class E> friend inline bool operator>=(ntbs_t l, parray<E, Traits> r) { return Traits::ntbs_gt_eq (l.p, r.len, r.p); }
-    template<class E> friend inline bool operator==(parray<E, Traits> l, ntbs_t r) { return Traits::ntbs_eq    (l.len, l.p, r.p); }
-    template<class E> friend inline bool operator!=(parray<E, Traits> l, ntbs_t r) { return Traits::ntbs_not_eq(l.len, l.p, r.p); }
-    template<class E> friend inline bool operator< (parray<E, Traits> l, ntbs_t r) { return Traits::ntbs_lt    (l.len, l.p, r.p); }
-    template<class E> friend inline bool operator> (parray<E, Traits> l, ntbs_t r) { return Traits::ntbs_gt    (l.len, l.p, r.p); }
-    template<class E> friend inline bool operator<=(parray<E, Traits> l, ntbs_t r) { return Traits::ntbs_lt_eq (l.len, l.p, r.p); }
-    template<class E> friend inline bool operator>=(parray<E, Traits> l, ntbs_t r) { return Traits::ntbs_gt_eq (l.len, l.p, r.p); }
+    template<class E> friend bool operator==(ntbs_t l, parray<E, Traits> r) { return Traits::ntbs_eq    (l.p, r.len, r.p); }
+    template<class E> friend bool operator!=(ntbs_t l, parray<E, Traits> r) { return Traits::ntbs_not_eq(l.p, r.len, r.p); }
+    template<class E> friend bool operator< (ntbs_t l, parray<E, Traits> r) { return Traits::ntbs_lt    (l.p, r.len, r.p); }
+    template<class E> friend bool operator> (ntbs_t l, parray<E, Traits> r) { return Traits::ntbs_gt    (l.p, r.len, r.p); }
+    template<class E> friend bool operator<=(ntbs_t l, parray<E, Traits> r) { return Traits::ntbs_lt_eq (l.p, r.len, r.p); }
+    template<class E> friend bool operator>=(ntbs_t l, parray<E, Traits> r) { return Traits::ntbs_gt_eq (l.p, r.len, r.p); }
+    template<class E> friend bool operator==(parray<E, Traits> l, ntbs_t r) { return Traits::ntbs_eq    (l.len, l.p, r.p); }
+    template<class E> friend bool operator!=(parray<E, Traits> l, ntbs_t r) { return Traits::ntbs_not_eq(l.len, l.p, r.p); }
+    template<class E> friend bool operator< (parray<E, Traits> l, ntbs_t r) { return Traits::ntbs_lt    (l.len, l.p, r.p); }
+    template<class E> friend bool operator> (parray<E, Traits> l, ntbs_t r) { return Traits::ntbs_gt    (l.len, l.p, r.p); }
+    template<class E> friend bool operator<=(parray<E, Traits> l, ntbs_t r) { return Traits::ntbs_lt_eq (l.len, l.p, r.p); }
+    template<class E> friend bool operator>=(parray<E, Traits> l, ntbs_t r) { return Traits::ntbs_gt_eq (l.len, l.p, r.p); }
 
     // ntbs_t<T, Traits> vs basic_string<E, Tr, A>
-    template<class E, class Tr, class A> friend inline bool operator==(ntbs_t l, basic_string<E, Tr, A> const& r) { return l == parray<E const, Traits>(r); }
-    template<class E, class Tr, class A> friend inline bool operator!=(ntbs_t l, basic_string<E, Tr, A> const& r) { return l != parray<E const, Traits>(r); }
-    template<class E, class Tr, class A> friend inline bool operator< (ntbs_t l, basic_string<E, Tr, A> const& r) { return l <  parray<E const, Traits>(r); }
-    template<class E, class Tr, class A> friend inline bool operator> (ntbs_t l, basic_string<E, Tr, A> const& r) { return l >  parray<E const, Traits>(r); }
-    template<class E, class Tr, class A> friend inline bool operator<=(ntbs_t l, basic_string<E, Tr, A> const& r) { return l <= parray<E const, Traits>(r); }
-    template<class E, class Tr, class A> friend inline bool operator>=(ntbs_t l, basic_string<E, Tr, A> const& r) { return l >= parray<E const, Traits>(r); }
-    template<class E, class Tr, class A> friend inline bool operator==(basic_string<E, Tr, A> const& l, ntbs_t r) { return parray<E const, Traits>(l) == r; }
-    template<class E, class Tr, class A> friend inline bool operator!=(basic_string<E, Tr, A> const& l, ntbs_t r) { return parray<E const, Traits>(l) != r; }
-    template<class E, class Tr, class A> friend inline bool operator< (basic_string<E, Tr, A> const& l, ntbs_t r) { return parray<E const, Traits>(l) <  r; }
-    template<class E, class Tr, class A> friend inline bool operator> (basic_string<E, Tr, A> const& l, ntbs_t r) { return parray<E const, Traits>(l) >  r; }
-    template<class E, class Tr, class A> friend inline bool operator<=(basic_string<E, Tr, A> const& l, ntbs_t r) { return parray<E const, Traits>(l) <= r; }
-    template<class E, class Tr, class A> friend inline bool operator>=(basic_string<E, Tr, A> const& l, ntbs_t r) { return parray<E const, Traits>(l) >= r; }
+    template<class E, class Tr, class A> friend bool operator==(ntbs_t l, basic_string<E, Tr, A> const& r) { return l == parray<E const, Traits>(r); }
+    template<class E, class Tr, class A> friend bool operator!=(ntbs_t l, basic_string<E, Tr, A> const& r) { return l != parray<E const, Traits>(r); }
+    template<class E, class Tr, class A> friend bool operator< (ntbs_t l, basic_string<E, Tr, A> const& r) { return l <  parray<E const, Traits>(r); }
+    template<class E, class Tr, class A> friend bool operator> (ntbs_t l, basic_string<E, Tr, A> const& r) { return l >  parray<E const, Traits>(r); }
+    template<class E, class Tr, class A> friend bool operator<=(ntbs_t l, basic_string<E, Tr, A> const& r) { return l <= parray<E const, Traits>(r); }
+    template<class E, class Tr, class A> friend bool operator>=(ntbs_t l, basic_string<E, Tr, A> const& r) { return l >= parray<E const, Traits>(r); }
+    template<class E, class Tr, class A> friend bool operator==(basic_string<E, Tr, A> const& l, ntbs_t r) { return parray<E const, Traits>(l) == r; }
+    template<class E, class Tr, class A> friend bool operator!=(basic_string<E, Tr, A> const& l, ntbs_t r) { return parray<E const, Traits>(l) != r; }
+    template<class E, class Tr, class A> friend bool operator< (basic_string<E, Tr, A> const& l, ntbs_t r) { return parray<E const, Traits>(l) <  r; }
+    template<class E, class Tr, class A> friend bool operator> (basic_string<E, Tr, A> const& l, ntbs_t r) { return parray<E const, Traits>(l) >  r; }
+    template<class E, class Tr, class A> friend bool operator<=(basic_string<E, Tr, A> const& l, ntbs_t r) { return parray<E const, Traits>(l) <= r; }
+    template<class E, class Tr, class A> friend bool operator>=(basic_string<E, Tr, A> const& l, ntbs_t r) { return parray<E const, Traits>(l) >= r; }
 
     // ntbs_t<T, Traits> vs vector<E, A>
-    template<class E, class A> friend inline bool operator==(ntbs_t l, vector<E, A> const& r) { return l == parray<E const, Traits>(r); }
-    template<class E, class A> friend inline bool operator!=(ntbs_t l, vector<E, A> const& r) { return l != parray<E const, Traits>(r); }
-    template<class E, class A> friend inline bool operator< (ntbs_t l, vector<E, A> const& r) { return l <  parray<E const, Traits>(r); }
-    template<class E, class A> friend inline bool operator> (ntbs_t l, vector<E, A> const& r) { return l >  parray<E const, Traits>(r); }
-    template<class E, class A> friend inline bool operator<=(ntbs_t l, vector<E, A> const& r) { return l <= parray<E const, Traits>(r); }
-    template<class E, class A> friend inline bool operator>=(ntbs_t l, vector<E, A> const& r) { return l >= parray<E const, Traits>(r); }
-    template<class E, class A> friend inline bool operator==(vector<E, A> const& l, ntbs_t r) { return parray<E const, Traits>(l) == r; }
-    template<class E, class A> friend inline bool operator!=(vector<E, A> const& l, ntbs_t r) { return parray<E const, Traits>(l) != r; }
-    template<class E, class A> friend inline bool operator< (vector<E, A> const& l, ntbs_t r) { return parray<E const, Traits>(l) <  r; }
-    template<class E, class A> friend inline bool operator> (vector<E, A> const& l, ntbs_t r) { return parray<E const, Traits>(l) >  r; }
-    template<class E, class A> friend inline bool operator<=(vector<E, A> const& l, ntbs_t r) { return parray<E const, Traits>(l) <= r; }
-    template<class E, class A> friend inline bool operator>=(vector<E, A> const& l, ntbs_t r) { return parray<E const, Traits>(l) >= r; }
+    template<class E, class A> friend bool operator==(ntbs_t l, vector<E, A> const& r) { return l == parray<E const, Traits>(r); }
+    template<class E, class A> friend bool operator!=(ntbs_t l, vector<E, A> const& r) { return l != parray<E const, Traits>(r); }
+    template<class E, class A> friend bool operator< (ntbs_t l, vector<E, A> const& r) { return l <  parray<E const, Traits>(r); }
+    template<class E, class A> friend bool operator> (ntbs_t l, vector<E, A> const& r) { return l >  parray<E const, Traits>(r); }
+    template<class E, class A> friend bool operator<=(ntbs_t l, vector<E, A> const& r) { return l <= parray<E const, Traits>(r); }
+    template<class E, class A> friend bool operator>=(ntbs_t l, vector<E, A> const& r) { return l >= parray<E const, Traits>(r); }
+    template<class E, class A> friend bool operator==(vector<E, A> const& l, ntbs_t r) { return parray<E const, Traits>(l) == r; }
+    template<class E, class A> friend bool operator!=(vector<E, A> const& l, ntbs_t r) { return parray<E const, Traits>(l) != r; }
+    template<class E, class A> friend bool operator< (vector<E, A> const& l, ntbs_t r) { return parray<E const, Traits>(l) <  r; }
+    template<class E, class A> friend bool operator> (vector<E, A> const& l, ntbs_t r) { return parray<E const, Traits>(l) >  r; }
+    template<class E, class A> friend bool operator<=(vector<E, A> const& l, ntbs_t r) { return parray<E const, Traits>(l) <= r; }
+    template<class E, class A> friend bool operator>=(vector<E, A> const& l, ntbs_t r) { return parray<E const, Traits>(l) >= r; }
 
-    template<class E, class A> friend inline bool operator==(ntbs_t l, vector<E, A>& r) { return l == parray<E, Traits>(r); }
-    template<class E, class A> friend inline bool operator!=(ntbs_t l, vector<E, A>& r) { return l != parray<E, Traits>(r); }
-    template<class E, class A> friend inline bool operator< (ntbs_t l, vector<E, A>& r) { return l <  parray<E, Traits>(r); }
-    template<class E, class A> friend inline bool operator> (ntbs_t l, vector<E, A>& r) { return l >  parray<E, Traits>(r); }
-    template<class E, class A> friend inline bool operator<=(ntbs_t l, vector<E, A>& r) { return l <= parray<E, Traits>(r); }
-    template<class E, class A> friend inline bool operator>=(ntbs_t l, vector<E, A>& r) { return l >= parray<E, Traits>(r); }
-    template<class E, class A> friend inline bool operator==(vector<E, A>& l, ntbs_t r) { return parray<E, Traits>(l) == r; }
-    template<class E, class A> friend inline bool operator!=(vector<E, A>& l, ntbs_t r) { return parray<E, Traits>(l) != r; }
-    template<class E, class A> friend inline bool operator< (vector<E, A>& l, ntbs_t r) { return parray<E, Traits>(l) <  r; }
-    template<class E, class A> friend inline bool operator> (vector<E, A>& l, ntbs_t r) { return parray<E, Traits>(l) >  r; }
-    template<class E, class A> friend inline bool operator<=(vector<E, A>& l, ntbs_t r) { return parray<E, Traits>(l) <= r; }
-    template<class E, class A> friend inline bool operator>=(vector<E, A>& l, ntbs_t r) { return parray<E, Traits>(l) >= r; }
+    template<class E, class A> friend bool operator==(ntbs_t l, vector<E, A>& r) { return l == parray<E, Traits>(r); }
+    template<class E, class A> friend bool operator!=(ntbs_t l, vector<E, A>& r) { return l != parray<E, Traits>(r); }
+    template<class E, class A> friend bool operator< (ntbs_t l, vector<E, A>& r) { return l <  parray<E, Traits>(r); }
+    template<class E, class A> friend bool operator> (ntbs_t l, vector<E, A>& r) { return l >  parray<E, Traits>(r); }
+    template<class E, class A> friend bool operator<=(ntbs_t l, vector<E, A>& r) { return l <= parray<E, Traits>(r); }
+    template<class E, class A> friend bool operator>=(ntbs_t l, vector<E, A>& r) { return l >= parray<E, Traits>(r); }
+    template<class E, class A> friend bool operator==(vector<E, A>& l, ntbs_t r) { return parray<E, Traits>(l) == r; }
+    template<class E, class A> friend bool operator!=(vector<E, A>& l, ntbs_t r) { return parray<E, Traits>(l) != r; }
+    template<class E, class A> friend bool operator< (vector<E, A>& l, ntbs_t r) { return parray<E, Traits>(l) <  r; }
+    template<class E, class A> friend bool operator> (vector<E, A>& l, ntbs_t r) { return parray<E, Traits>(l) >  r; }
+    template<class E, class A> friend bool operator<=(vector<E, A>& l, ntbs_t r) { return parray<E, Traits>(l) <= r; }
+    template<class E, class A> friend bool operator>=(vector<E, A>& l, ntbs_t r) { return parray<E, Traits>(l) >= r; }
 
     // ntbs_t<T, Traits> vs E[len]
-    template<class E, size_t len, enable_if<!is_char<E>>...> friend inline bool operator==(ntbs_t l, E (&r)[len]) { return l == parray<E, Traits>(r); }
-    template<class E, size_t len, enable_if<!is_char<E>>...> friend inline bool operator!=(ntbs_t l, E (&r)[len]) { return l != parray<E, Traits>(r); }
-    template<class E, size_t len, enable_if<!is_char<E>>...> friend inline bool operator< (ntbs_t l, E (&r)[len]) { return l <  parray<E, Traits>(r); }
-    template<class E, size_t len, enable_if<!is_char<E>>...> friend inline bool operator> (ntbs_t l, E (&r)[len]) { return l >  parray<E, Traits>(r); }
-    template<class E, size_t len, enable_if<!is_char<E>>...> friend inline bool operator<=(ntbs_t l, E (&r)[len]) { return l <= parray<E, Traits>(r); }
-    template<class E, size_t len, enable_if<!is_char<E>>...> friend inline bool operator>=(ntbs_t l, E (&r)[len]) { return l >= parray<E, Traits>(r); }
-    template<class E, size_t len, enable_if<!is_char<E>>...> friend inline bool operator==(E (&l)[len], ntbs_t r) { return parray<E, Traits>(l) == r; }
-    template<class E, size_t len, enable_if<!is_char<E>>...> friend inline bool operator!=(E (&l)[len], ntbs_t r) { return parray<E, Traits>(l) != r; }
-    template<class E, size_t len, enable_if<!is_char<E>>...> friend inline bool operator< (E (&l)[len], ntbs_t r) { return parray<E, Traits>(l) <  r; }
-    template<class E, size_t len, enable_if<!is_char<E>>...> friend inline bool operator> (E (&l)[len], ntbs_t r) { return parray<E, Traits>(l) >  r; }
-    template<class E, size_t len, enable_if<!is_char<E>>...> friend inline bool operator<=(E (&l)[len], ntbs_t r) { return parray<E, Traits>(l) <= r; }
-    template<class E, size_t len, enable_if<!is_char<E>>...> friend inline bool operator>=(E (&l)[len], ntbs_t r) { return parray<E, Traits>(l) >= r; }
+    template<class E, size_t len, enable_if<!is_char<E>>...> friend bool operator==(ntbs_t l, E (&r)[len]) { return l == parray<E, Traits>(r); }
+    template<class E, size_t len, enable_if<!is_char<E>>...> friend bool operator!=(ntbs_t l, E (&r)[len]) { return l != parray<E, Traits>(r); }
+    template<class E, size_t len, enable_if<!is_char<E>>...> friend bool operator< (ntbs_t l, E (&r)[len]) { return l <  parray<E, Traits>(r); }
+    template<class E, size_t len, enable_if<!is_char<E>>...> friend bool operator> (ntbs_t l, E (&r)[len]) { return l >  parray<E, Traits>(r); }
+    template<class E, size_t len, enable_if<!is_char<E>>...> friend bool operator<=(ntbs_t l, E (&r)[len]) { return l <= parray<E, Traits>(r); }
+    template<class E, size_t len, enable_if<!is_char<E>>...> friend bool operator>=(ntbs_t l, E (&r)[len]) { return l >= parray<E, Traits>(r); }
+    template<class E, size_t len, enable_if<!is_char<E>>...> friend bool operator==(E (&l)[len], ntbs_t r) { return parray<E, Traits>(l) == r; }
+    template<class E, size_t len, enable_if<!is_char<E>>...> friend bool operator!=(E (&l)[len], ntbs_t r) { return parray<E, Traits>(l) != r; }
+    template<class E, size_t len, enable_if<!is_char<E>>...> friend bool operator< (E (&l)[len], ntbs_t r) { return parray<E, Traits>(l) <  r; }
+    template<class E, size_t len, enable_if<!is_char<E>>...> friend bool operator> (E (&l)[len], ntbs_t r) { return parray<E, Traits>(l) >  r; }
+    template<class E, size_t len, enable_if<!is_char<E>>...> friend bool operator<=(E (&l)[len], ntbs_t r) { return parray<E, Traits>(l) <= r; }
+    template<class E, size_t len, enable_if<!is_char<E>>...> friend bool operator>=(E (&l)[len], ntbs_t r) { return parray<E, Traits>(l) >= r; }
 
     // ostream <<
-    template<class E, class Tr, enable_if<is_almost_same<T, E const>>...> friend inline basic_ostream<E, Tr>& operator<<(basic_ostream<E, Tr>& os, ntbs_t v) { return os << v.p; }
+    template<class E, class Tr, enable_if<is_almost_same<T, E const>>...> friend basic_ostream<E, Tr>& operator<<(basic_ostream<E, Tr>& os, ntbs_t v) { return os << v.p; }
 };
 
 template<class Traits = parray_traits, class T, enable_if<is_char<T>>...>

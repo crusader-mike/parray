@@ -32,7 +32,7 @@ TEST_CASE("parray test", "[parray]")
         REQUIRE( r2 == r1 );
     }
 
-    parray<int> p1 = parray<int>::zero();
+    parray<int> p1{};
     parray<int const> p2(p1);
     parray<int volatile> p3 = {0, p1.p};
     parray<int const> p4{p1.str()};
@@ -232,7 +232,7 @@ TEST_CASE("parray test", "[parray]")
         REQUIRE( (d < ntbs("AA"+0) ) == true);
         REQUIRE( (d <= ntbs("AA"+0) ) == true);
 
-        parray<int const> e = parray<int const>::zero();
+        parray<int const> e{};
         REQUIRE( ntbs(""+0) == e );
         REQUIRE( ntbs(""+0) >= e );
         REQUIRE( ntbs(""+0) <= e );
