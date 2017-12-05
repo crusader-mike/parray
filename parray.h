@@ -379,6 +379,11 @@ struct parray
     template<class E, class A, enable_if<is_almost_same<E const, T>>...>                // vector<E> const -> parray<T> (E const* -> T*)
     explicit parray(vector<E, A> const& v) : len(v.size()), p(len ? &v[0] : nullptr) {}
 
+    // subparts
+    parray left(size_t cnt) const               { return {cnt, p}; }
+    parray right(size_t cnt) const              { return {cnt, p + len - cnt}; }
+    parray mid(size_t pos, size_t cnt) const    { return {cnt, p + pos}; }
+
     // cheap access
     size_t size() const             { return len;       }
     bool empty() const              { return len == 0;  }
@@ -598,8 +603,26 @@ using rcwstring = parray<wchar_t const>;
 
 
 //------------------------------------------------------------------------------
+inline namespace literals {
+//------------------------------------------------------------------------------
+
+
+//------------------------------------------------------------------------------
+inline parray<char     const> operator""_rs(char     const* p, std::size_t len) { return {len, p}; }
+inline parray<wchar_t  const> operator""_rs(wchar_t  const* p, std::size_t len) { return {len, p}; }
+inline parray<char16_t const> operator""_rs(char16_t const* p, std::size_t len) { return {len, p}; }
+inline parray<char32_t const> operator""_rs(char32_t const* p, std::size_t len) { return {len, p}; }
+
+
+//------------------------------------------------------------------------------
+} // namespace literals
+//------------------------------------------------------------------------------
+
+
+//------------------------------------------------------------------------------
 } // namespace adv
 //------------------------------------------------------------------------------
 
 
 #endif //PARRAY_H_2016_08_30_04_03_32_135_H_
+
