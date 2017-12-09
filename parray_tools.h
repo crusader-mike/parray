@@ -297,25 +297,24 @@ struct multi_delim
 };
 
 // bitmap lookup delimiter, ignores values outside of [minV, maxV] range
-template<class IntT = int, IntT minV = numeric_limits<char>::min(), IntT maxV = numeric_limits<char>::max()>
+template<class IntT = unsigned char, IntT minV = numeric_limits<IntT>::min(), IntT maxV = numeric_limits<IntT>::max()>
 class bitset_delim
 {
     static_assert(maxV - minV > 0, "");     // max idx value must be positive IntT
 
     enum {  char_bits   = numeric_limits<unsigned char>::digits,    // aka CHAR_BIT
-            chunk_bits  = sizeof(long)*char_bits,
+            chunk_bits  = sizeof(unsigned long)*char_bits,
             chunk_count = ((maxV - minV + 1) + chunk_bits - 1)/chunk_bits,
     };
 
-    long data[chunk_count];
+    unsigned long data[chunk_count];
 
-    IntT idx_(IntT i) const { return i / chunk_bits; }
-    IntT off_(IntT i) const { return i % chunk_bits; }
+    unsigned idx_(unsigned i) const { return i / chunk_bits; }
+    unsigned long mask_(unsigned i) const { return 1ul << (i % chunk_bits); }
 
-    static constexpr IntT one_() { return 1; }
-    void set_(IntT i) { data[idx_(i)] |=  (one_() << off_(i)); }
-    void clr_(IntT i) { data[idx_(i)] &= ~(one_() << off_(i)); }
-    bool get_(IntT i) const { return ( data[idx_(i)] & (one_() << off_(i)) ) ? true : false; }
+    void set_(unsigned i) { data[idx_(i)] |=  mask_(i); }
+    void clr_(unsigned i) { data[idx_(i)] &= ~mask_(i); }
+    bool get_(unsigned i) const { return ( data[idx_(i)] & mask_(i) ) ? true : false; }
 
 public:
     bitset_delim() { clear_all(); }
@@ -894,3 +893,4 @@ using parray_tools_pvt_::bitset_delim;
 
 
 #endif //PARRAY_TOOLS_H_2016_09_05_23_21_06_660_H_
+
